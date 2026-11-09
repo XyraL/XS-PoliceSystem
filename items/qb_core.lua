@@ -1,0 +1,13 @@
+-- Paste these into qb-core/shared/items.lua, replacing any entries with the same name.
+-- Images: copy inventory_images/*.png into your inventory's image folder (qb-inventory/html/images).
+
+['handcuffs'] = { name = 'handcuffs', label = 'Handcuffs', weight = 300, type = 'item', image = 'handcuffs.png', unique = false, useable = true, shouldClose = true, description = 'Cuffs the person in front of you.' },
+['spikestrip'] = { name = 'spikestrip', label = 'Spike Strip', weight = 2500, type = 'item', image = 'spikestrip.png', unique = false, useable = true, shouldClose = true, description = 'Lays a strip that bursts the tyres of anything driving over it. Police only.' },
+['empty_evidence_bag'] = { name = 'empty_evidence_bag', label = 'Evidence Bag', weight = 20, type = 'item', image = 'empty_evidence_bag.png', unique = false, useable = false, shouldClose = true, description = 'An empty bag for evidence at a scene.' },
+['filled_evidence_bag'] = { name = 'filled_evidence_bag', label = 'Evidence Bag', weight = 60, type = 'item', image = 'filled_evidence_bag.png', unique = true, useable = false, shouldClose = true, description = 'Sealed evidence. File it in an evidence locker.' },
+['bleach'] = { name = 'bleach', label = 'Bleach', weight = 1000, type = 'item', image = 'bleach.png', unique = false, useable = true, shouldClose = true, description = 'Cleans blood, casings and prints off a scene.' },
+['prison_scrap'] = { name = 'prison_scrap', label = 'Scrap Metal', weight = 150, type = 'item', image = 'prison_scrap.png', unique = false, useable = false, shouldClose = true, description = 'A bent strip of metal pocketed on a prison job. Guards take it if they find it.' },
+['prison_spoon'] = { name = 'prison_spoon', label = 'Spoon', weight = 40, type = 'item', image = 'prison_spoon.png', unique = false, useable = false, shouldClose = true, description = 'A canteen spoon. Slow work, but it digs.' },
+['prison_shiv'] = { name = 'prison_shiv', label = 'Shiv', weight = 120, type = 'item', image = 'prison_shiv.png', unique = false, useable = true, shouldClose = true, description = 'Sharpened scrap with a taped grip. Use it to pull it out, use it again to put it away.' },
+['prison_cutters'] = { name = 'prison_cutters', label = 'Wire Cutters', weight = 450, type = 'item', image = 'prison_cutters.png', unique = false, useable = false, shouldClose = true, description = 'Home made cutters. Good for one fence, maybe two.' },
+['prison_cigarettes'] = { name = 'prison_cigarettes', label = 'Cigarettes', weight = 30, type = 'item', image = 'prison_cigarettes.png', unique = false, useable = false, shouldClose = true, description = 'A pack of cigarettes. Money inside.' },

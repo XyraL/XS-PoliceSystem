@@ -1,0 +1,15 @@
+#xsp-jail{position:fixed;left:50%;top:calc(28px * var(--xsp-s,1));transform:translateX(-50%) scale(var(--xsp-s,1));transform-origin:center top;pointer-events:none}
+.band{position:relative;display:flex;align-items:center;gap:14px;min-width:300px;padding:10px 14px 10px 12px;border-radius:30px;background:linear-gradient(180deg,#ff9a4d,#f2711c);box-shadow:0 14px 34px -12px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.12);color:#2a1305;animation:bandIn .3s ease-out}
+@keyframes bandIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.band::after{content:'';position:absolute;left:18px;right:18px;top:4px;height:6px;border-radius:6px;background:rgba(255,255,255,.18)}
+.band-snap{flex:none;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff7ee,#d9cdbf 55%,#a89a8a);box-shadow:0 1px 2px rgba(0,0,0,.35),inset 0 0 0 2px rgba(255,255,255,.35)}
+.band-text{flex:1;min-width:0}
+.band-top{display:flex;align-items:baseline;gap:8px;font:800 10px/1 var(--x-font);letter-spacing:.16em;text-transform:uppercase}
+.band-top span{font-family:var(--x-mono);letter-spacing:.08em;opacity:.8}
+.band-time{margin-top:3px;font:800 26px/1 var(--x-mono);font-variant-numeric:tabular-nums;letter-spacing:.02em;color:#1d0d03}
+.band-meta{margin-top:3px;max-width:220px;font:600 10.5px/1.2 var(--x-font);opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band-code{flex:none;width:46px;height:34px;border-radius:3px;background:repeating-linear-gradient(90deg,#2a1305 0 2px,transparent 2px 3px,#2a1305 3px 4px,transparent 4px 7px,#2a1305 7px 10px,transparent 10px 12px);opacity:.75}
+.band-out{background:linear-gradient(180deg,#ff6b6b,#d92b3a);color:#fff}
+.band-out .band-time{color:#fff;font-size:22px;letter-spacing:.14em;text-transform:uppercase}
+.band-out .band-code{background:repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 3px,#fff 3px 4px,transparent 4px 7px,#fff 7px 10px,transparent 10px 12px)}
+.band-credit{display:inline-flex;align-items:center;margin-top:4px;padding:2px 7px;border-radius:9px;background:rgba(42,19,5,.16);font:800 10px/1.2 var(--x-mono);letter-spacing:.04em;color:#2a1305}
