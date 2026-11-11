@@ -160,6 +160,10 @@ On the **Options** tab, set the centre of the prison and the escape radius. Leav
 
 **Use the Bolingbroke layout** on the Options tab fills in Bolingbroke Penitentiary for you: 11 cells, the electrician job with 7 spots, the canteen, two workout spots, the release point and the escape circle.
 
+### Testing a prison
+
+Staff can jail themselves to try a prison out. Press **Test on me** in the prison's editor and you are jailed there for 5 minutes (`Config.Jail.testMinutes`). It is a real sentence: your items are taken and given back, and the jobs, canteen, commissary, guards, tunnels and fences all work. Nothing goes on your record, nothing is logged, and police are not told if you escape. Open the builder again during the test and a bar at the top shows the time left, with **Skip to release** to jump to a few seconds before release and **End test** to get out straight away. **Test on me** also works on a prison that is switched off, so you can try it before players see it. Turn it off with `Config.Jail.testMode` or in Settings.
+
 ## Building an impound lot
 
 Go to **Impound lots** and press **New impound lot**, then place:

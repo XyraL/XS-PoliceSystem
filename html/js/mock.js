@@ -84,6 +84,7 @@
         'boss:armory': (p) => ({ ok: true, data: p.list }),
         'boss:fleet': (p) => ({ ok: true, data: { vehicles: p.vehicles, helicopters: p.helicopters } }),
         'builder:settingsSave': (p) => ({ ok: true, data: { values: null, boot: { Commands: true } } }),
+        'builder:jailtestskip': () => ({ ok: true, data: { jail: 'Bolingbroke Penitentiary', left: 20, escaped: false } }),
         'builder:areas': (list) => {
             const out = {};
             const near = (x, y) => (x > 300 && x < 600 && y < -900 && y > -1100 ? ['Sinner St', 'Mission Row'] : x > 1500 && y > 2400 && y < 2700 ? ['Route 68', 'Bolingbroke Penitentiary'] : x > 300 && x < 450 && y < -1550 ? ['Innocence Blvd', 'Davis'] : x < -1000 && y < -700 && y > -900 ? ['Vespucci Blvd', 'Vespucci Canals'] : x > 100 && x < 250 && y < -900 && y > -1050 ? ['Vespucci Blvd', 'Legion Square'] : x < -400 && y > 5900 ? ['Paleto Blvd', 'Paleto Bay'] : ['', 'Los Santos']);
@@ -453,6 +454,7 @@
                     points: { duty: [{ id: 'pd1', x: -449.8, y: 6012.9, z: 31.8, w: 0 }], garage: [{ id: 'pg1', x: -455.4, y: 6002.0, z: 31.3, w: 88, spawn: { x: -455.4, y: 6002.0, z: 31.3, w: 88 } }] } };
                 send('builder', 'open', {
                     places: [STATION, JAIL, IMPOUND, CUSTOM_BLIP, SERVICE, PALETO],
+                    jailTest: params.get('jailtest') === '1' ? { jail: 'Bolingbroke Penitentiary', left: 272, escaped: params.get('escaped') === '1' } : undefined,
                     vehicles: [{ model: 'police', label: 'Police Cruiser' }, { model: 'police2', label: 'Police Buffalo' }, { model: 'police3', label: 'Police Interceptor' }, { model: 'policeb', label: 'Police Bike' }, { model: 'fbi', label: 'FIB Buffalo' }, { model: 'sheriff', label: 'Sheriff Cruiser' }, { model: 'polmav', label: 'Police Maverick' }],
                     items: [{ name: 'weapon_combatpistol', label: 'Combat Pistol' }, { name: 'weapon_stungun', label: 'Taser' }, { name: 'weapon_nightstick', label: 'Nightstick' }, { name: 'weapon_flashlight', label: 'Flashlight' }, { name: 'weapon_pumpshotgun', label: 'Pump Shotgun' }, { name: 'weapon_carbinerifle', label: 'Carbine Rifle' },
                         { name: 'pistol_ammo', label: 'Pistol Ammo' }, { name: 'rifle_ammo', label: 'Rifle Ammo' }, { name: 'armor', label: 'Body Armour' }, { name: 'radio', label: 'Radio' }, { name: 'sandwich', label: 'Sandwich' }, { name: 'water_bottle', label: 'Water Bottle' },

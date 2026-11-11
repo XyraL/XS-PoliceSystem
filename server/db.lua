@@ -168,6 +168,7 @@ local COLUMNS = {
     { 'xs_police_lab', 'ref', "VARCHAR(64) NOT NULL DEFAULT ''" },
     { 'xs_police_inmates', 'credit', 'INT NOT NULL DEFAULT 0' },
     { 'xs_police_inmates', 'breakout', 'LONGTEXT NULL' },
+    { 'xs_police_inmates', 'test', 'TINYINT(1) NOT NULL DEFAULT 0' },
 }
 
 local function addColumns()
@@ -206,6 +207,7 @@ end
 
 function Db.Log(kind, target, amount, detail, officer)
     if not Db.ready then return end
+    if target and target.citizenid and Jail and Jail.tests and Jail.tests[target.citizenid] then return end
     MySQL.insert('INSERT INTO xs_police_log (kind, citizenid, name, amount, detail, officer_cid, officer_name, job) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', {
         kind, target and target.citizenid or '', target and target.name or '', math.floor(tonumber(amount) or 0),
         Util.Text(detail, 255), officer and officer.citizenid or '', officer and officer.name or '', officer and officer.job or '',

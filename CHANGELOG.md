@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0] — 2026-11-10
+
+### Added
+
+- Test on me: staff jail themselves in a prison from the builder to try it
+- A test takes and returns your items like a real sentence
+- Nothing goes on your record and police are not told if you escape
+- While in a test, the builder has Skip to release and End test
+- Two new settings: test mode on or off, and how long a test lasts
+
+Replace everything except your config.lua. Copy testMode and testMinutes into Config.Jail if you want to change them. No SQL to run.
+
 ## [1.0.0] — 2026-11-09
 
 The first release.

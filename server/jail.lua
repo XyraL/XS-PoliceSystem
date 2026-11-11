@@ -1,4 +1,4 @@
-Jail = { inmates = {}, canteenAt = {}, jobStart = {}, spotAt = {}, workoutStart = {}, locks = {} }
+Jail = { inmates = {}, canteenAt = {}, jobStart = {}, spotAt = {}, workoutStart = {}, locks = {}, tests = {} }
 
 local FALLBACK_RELEASE = { x = 1740.88, y = 2476.57, z = 44.85, w = 299.49 }
 local ESCAPE_CHECKS = 3
@@ -71,14 +71,14 @@ end
 
 local function write(inmate)
     return MySQL.query.await([[
-        INSERT INTO `xs_police_inmates` (`citizenid`, `name`, `jail_id`, `months`, `seconds_left`, `reason`, `officer_name`, `items`, `look`, `escaped`)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO `xs_police_inmates` (`citizenid`, `name`, `jail_id`, `months`, `seconds_left`, `reason`, `officer_name`, `items`, `look`, `escaped`, `test`)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE `name` = VALUES(`name`), `jail_id` = VALUES(`jail_id`), `months` = VALUES(`months`),
             `seconds_left` = VALUES(`seconds_left`), `reason` = VALUES(`reason`), `officer_name` = VALUES(`officer_name`),
-            `items` = VALUES(`items`), `look` = VALUES(`look`), `escaped` = VALUES(`escaped`)
+            `items` = VALUES(`items`), `look` = VALUES(`look`), `escaped` = VALUES(`escaped`), `test` = VALUES(`test`)
     ]], {
         inmate.cid, inmate.name, inmate.jailId, inmate.months, math.max(0, math.floor(inmate.left)), inmate.reason, inmate.officer,
-        Db.Json(inmate.items or {}), inmate.look and Db.Json(inmate.look) or nil, inmate.escaped and 1 or 0,
+        Db.Json(inmate.items or {}), inmate.look and Db.Json(inmate.look) or nil, inmate.escaped and 1 or 0, inmate.test and 1 or 0,
     })
 end
 
@@ -96,7 +96,7 @@ local function publicState(inmate)
     return {
         jailId = inmate.jailId, name = place and place.name or '', left = math.max(0, math.floor(inmate.left)), months = inmate.months,
         reason = inmate.reason, escaped = inmate.escaped == true, number = inmate.number, look = inmate.look ~= nil,
-        credit = math.floor(tonumber(inmate.credit) or 0),
+        credit = math.floor(tonumber(inmate.credit) or 0), test = inmate.test == true,
     }
 end
 
@@ -133,17 +133,39 @@ local function offDuty(src)
     end
 end
 
-function Jail.Send(target, months, reason, officer)
+local function testJail(id)
+    local place = id and Places.Get(tonumber(id) or id)
+    if not place or place.kind ~= 'jail' or #(place.points.cell or {}) == 0 then return nil end
+    return place
+end
+
+function Jail.Send(target, months, reason, officer, opts)
+    opts = type(opts) == 'table' and opts or {}
+    local test = opts.test == true
     if not Config.Jail.enabled then return false, Text('err_jail_off') end
-    months = math.floor(tonumber(months) or 0)
-    if months < 1 or months > (Config.Jail.maxMonths or 300) then return false, Text('err_months', { max = Config.Jail.maxMonths or 300 }) end
+    local seconds
+    if test then
+        seconds = math.floor(tonumber(opts.seconds) or 0)
+        if seconds < 10 then return false, Text('err_jailtest_time') end
+        months = math.max(1, math.ceil(seconds / secondsPerMonth()))
+        officer = nil
+    else
+        months = math.floor(tonumber(months) or 0)
+        if months < 1 or months > (Config.Jail.maxMonths or 300) then return false, Text('err_months', { max = Config.Jail.maxMonths or 300 }) end
+        seconds = months * secondsPerMonth()
+    end
     local cid = Framework.GetCitizenId(target)
     if not cid then return false, Text('err_no_player') end
     if Jail.IsInmate(target) then return false, Text('err_already_jailed') end
-    local place = pickJail(officer and officer.src and Places.Coords(officer.src))
+    local place
+    if test then
+        place = opts.jailId and testJail(opts.jailId) or pickJail(Places.Coords(target))
+    else
+        place = pickJail(officer and officer.src and Places.Coords(officer.src))
+    end
     if not place then return false, Text('err_no_jail') end
     if not lock(cid) then return false, Text('err_slow_down') end
-    reason = Util.Text(reason, 200)
+    reason = test and Text('jailtest_reason') or Util.Text(reason, 200)
     if reason == '' then reason = Text('no_reason') end
 
     local ok, result = pcall(function()
@@ -158,9 +180,9 @@ function Jail.Send(target, months, reason, officer)
         end
         local inmate = {
             src = target, cid = cid, name = Framework.GetName(target) or '', jailId = place.id, months = months,
-            left = months * secondsPerMonth(), reason = reason, officer = officer and officer.name or '',
+            left = seconds, reason = reason, officer = officer and officer.name or '',
             items = items, look = old and Db.Decode(old.look, nil) or nil, escaped = false, outside = 0,
-            number = ('%04d'):format(math.random(1000, 9999)), credit = 0, breakout = {},
+            number = ('%04d'):format(math.random(1000, 9999)), credit = 0, breakout = {}, test = test,
         }
         write(inmate)
         Inmate.Save(inmate)
@@ -179,6 +201,14 @@ function Jail.Send(target, months, reason, officer)
     offDuty(target)
     Jail.inmates[target] = inmate
     Framework.SetMetaData(target, 'injail', months)
+    if test then
+        Jail.tests[cid] = true
+        unlock(cid)
+        Jail.Place(target)
+        Framework.Notify(target, Text('jailtest_started', { minutes = math.ceil(seconds / 60), jail = place.name or '' }), 'inform')
+        print(('^3[XS-PoliceSystem]^0 %s started a jail test in %s for %d second(s)'):format(inmate.name, place.name or '?', seconds))
+        return true
+    end
     Framework.SetMetaData(target, 'criminalrecord', { hasRecord = true, date = os.date('*t') })
     unlock(cid)
     Jail.Place(target)
@@ -235,6 +265,7 @@ function Jail.Release(src, reason)
     local inmate = Jail.inmates[src]
     if not inmate or not lock(inmate.cid) then return false end
     Jail.inmates[src] = nil
+    Jail.tests[inmate.cid] = nil
     pcall(strip, src)
     Inmate.OnRelease(src, inmate)
     local ok, left = pcall(function()
@@ -275,8 +306,10 @@ function Jail.Load(src)
         reason = row.reason or '', officer = row.officer_name or '', items = Db.Decode(row.items, {}), look = Db.Decode(row.look, nil),
         escaped = Util.Truthy(row.escaped), outside = 0, number = ('%04d'):format(math.random(1000, 9999)),
         credit = math.max(0, math.floor(tonumber(row.credit) or 0)), breakout = Db.Decode(row.breakout, {}),
+        test = Util.Truthy(row.test),
     }
     Jail.inmates[src] = inmate
+    if inmate.test then Jail.tests[cid] = true end
     Framework.SetMetaData(src, 'injail', inmate.escaped and 0 or monthsLeft(inmate.left))
     if inmate.escaped then
         TriggerClientEvent('XS-PoliceSystem:client:escapedState', src, publicState(inmate))
@@ -482,9 +515,10 @@ local function escape(src, inmate, place, quiet)
     inmate.arriving = nil
     persist(src)
     TriggerClientEvent('XS-PoliceSystem:client:escaped', src)
+    if inmate.test then Framework.Notify(src, Text('jailtest_escaped'), 'inform') end
     if quiet then return end
     if place and Config.Jail.alarm ~= false then Prison.Alarm(place.id) end
-    if not Config.Jail.escapeAlert then return end
+    if not Config.Jail.escapeAlert or inmate.test then return end
     local c = Places.Coords(src) or vector3(0.0, 0.0, 0.0)
     local text = Text('escape_alert', { name = inmate.name, jail = place and place.name or '' })
     for _, cop in ipairs(Framework.Cops(true)) do
@@ -580,6 +614,40 @@ function Jail.LoadOnline()
         local ok, err = pcall(Jail.Load, src)
         if not ok then print(('^1[XS-PoliceSystem]^0 could not load jail state for %s: %s'):format(src, tostring(err))) end
     end
+end
+
+function Jail.Test(src, minutes, jailId)
+    if Config.Jail.testMode == false then return false, Text('err_jailtest_off') end
+    local inmate = Jail.inmates[src]
+    if inmate and not inmate.test then return false, Text('err_jailtest_real') end
+    if inmate then return false, Text('err_jailtest_running') end
+    minutes = math.floor(tonumber(minutes) or tonumber(Config.Jail.testMinutes) or 5)
+    minutes = math.max(1, math.min(120, minutes))
+    return Jail.Send(src, nil, nil, nil, { test = true, seconds = minutes * 60, jailId = jailId })
+end
+
+function Jail.EndTest(src)
+    local inmate = Jail.inmates[src]
+    if not inmate or not inmate.test then return false, Text('err_jailtest_none') end
+    Jail.Release(src, 'test')
+    return true
+end
+
+function Jail.TestState(src)
+    local inmate = Jail.inmates[src]
+    if not inmate or not inmate.test then return nil end
+    local place = Places.Get(inmate.jailId)
+    return { jail = place and place.name or '', left = math.max(0, math.floor(inmate.left)), escaped = inmate.escaped == true }
+end
+
+function Jail.SkipTest(src)
+    local inmate = Jail.inmates[src]
+    if not inmate or not inmate.test then return false, Text('err_jailtest_none') end
+    if inmate.escaped then return false, Text('err_jailtest_escaped') end
+    inmate.left = math.min(inmate.left, 20)
+    persist(src)
+    TriggerClientEvent('XS-PoliceSystem:client:jailTime', src, math.floor(inmate.left))
+    return true, Text('jailtest_skipped')
 end
 
 exports('SendToJail', function(target, months, reason) return Jail.Send(tonumber(target), months, reason, nil) end)

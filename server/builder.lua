@@ -147,10 +147,28 @@ local function inUse(place)
     return nil
 end
 
+lib.callback.register('XS-PoliceSystem:server:builderJailTest', function(src, placeId)
+    if not admin(src) then return false, Text('err_not_admin') end
+    if not Places.Get(tonumber(placeId) or placeId) then return false, Text('err_no_jail') end
+    return Jail.Test(src, nil, tonumber(placeId) or placeId)
+end)
+
+lib.callback.register('XS-PoliceSystem:server:builderJailTestSkip', function(src)
+    if not admin(src) then return false, Text('err_not_admin') end
+    local ok, msg = Jail.SkipTest(src)
+    if not ok then return false, msg end
+    return true, Jail.TestState(src)
+end)
+
+lib.callback.register('XS-PoliceSystem:server:builderJailTestEnd', function(src)
+    if not admin(src) then return false, Text('err_not_admin') end
+    return Jail.EndTest(src)
+end)
+
 lib.callback.register('XS-PoliceSystem:server:builderOpen', function(src)
     if not admin(src) then return false, Text('err_not_admin') end
     return true, {
-        places = Places.All(), vehicles = Framework.Vehicles(), items = Inventory.Items(), jobs = jobOptions(),
+        places = Places.All(), jailTest = Jail.TestState(src), vehicles = Framework.Vehicles(), items = Inventory.Items(), jobs = jobOptions(),
         defaults = {
             armory = Places.ArmoryDefaults(), vehicles = Config.Garage.defaults, helicopters = Config.Garage.helicopters,
             plate = Config.Garage.platePrefix, radius = Config.Jail.escapeRadius,

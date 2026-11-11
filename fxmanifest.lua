@@ -5,7 +5,7 @@ lua54 'yes'
 name 'XS-PoliceSystem'
 author 'XyraL'
 description 'A complete police job and jail for Qbox and QBCore. Replaces qbx_police, qb-policejob and qb-prison.'
-version '1.0.0'
+version '1.1.0'
 
 provide 'qb-policejob'
 provide 'qbx_police'

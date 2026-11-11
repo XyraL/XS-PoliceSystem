@@ -159,6 +159,26 @@ UI.Handle('builder:here', function()
     return true, { x = c.x, y = c.y, z = z, w = GetEntityHeading(ped) }
 end)
 
+UI.Handle('builder:jailtest', function(p)
+    local id = type(p) == 'table' and p.id or nil
+    if not id then return false end
+    Builder.Close()
+    local ok, err = lib.callback.await('XS-PoliceSystem:server:builderJailTest', false, id)
+    if not ok and err then Framework.Notify(err, 'error') end
+    return true
+end)
+
+UI.Handle('builder:jailtestskip', function()
+    return lib.callback.await('XS-PoliceSystem:server:builderJailTestSkip', false)
+end)
+
+UI.Handle('builder:jailtestend', function()
+    Builder.Close()
+    local ok, err = lib.callback.await('XS-PoliceSystem:server:builderJailTestEnd', false)
+    if not ok and err then Framework.Notify(err, 'error') end
+    return true
+end)
+
 UI.Handle('builder:goto', function(p)
     if type(p) ~= 'table' or not p.x then return false end
     local ped = PlayerPedId()

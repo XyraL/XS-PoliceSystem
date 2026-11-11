@@ -245,7 +245,9 @@ local function through(src, inmate, place, p, kind)
     if not exit then return false, Text('err_no_exit') end
     local ped = GetPlayerPed(src)
     if ped ~= 0 then SetEntityCoords(ped, exit.x + 0.0, exit.y + 0.0, exit.z + 0.0, false, false, false, false) end
-    if (J().breakout or {}).alarm ~= false then Prison.Break(place.id) end
+    if (J().breakout or {}).alarm ~= false then
+        if inmate.test then Prison.Alarm(place.id) else Prison.Break(place.id) end
+    end
     Jail.Escape(src, true)
     Db.Log('breakout', { citizenid = inmate.cid, name = inmate.name }, 0, ('%s · %s'):format(place.name, Text('point_' .. kind)), nil)
     return true, { through = true, message = Text('breakout_through') }

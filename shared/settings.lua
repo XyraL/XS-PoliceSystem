@@ -186,6 +186,8 @@ Settings.Sections = {
         { 'Jail.escapeAlert', 'bool', needs = 'Jail.enabled' },
         { 'Jail.alarm', 'bool', needs = 'Jail.enabled' },
         { 'Jail.alarmMinutes', 'int', min = 1, max = 30, unit = 'min', needs = 'Jail.alarm' },
+        { 'Jail.testMode', 'bool', needs = 'Jail.enabled' },
+        { 'Jail.testMinutes', 'int', min = 1, max = 120, unit = 'min', needs = 'Jail.testMode' },
         { 'Jail.escapeRadius', 'int', min = 20, max = 1500, unit = 'm', needs = 'Jail.enabled' },
         { 'Jail.solitaryMinutes', 'int', min = 1, max = 60, unit = 'min', needs = 'Jail.enabled' },
         { 'Jail.spotCooldown', 'int', min = 0, max = 600, unit = 's', needs = 'Jail.enabled' },

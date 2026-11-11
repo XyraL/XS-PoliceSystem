@@ -531,6 +531,8 @@ Config.Jail = {
     escapeAlert = true,   -- tell on-duty officers when someone leaves the prison
     alarm = true,         -- the prison siren sounds around the prison when someone escapes
     alarmMinutes = 3,
+    testMode = true,      -- staff can jail themselves from a prison's editor in the builder (Test on me). No record, no police alerts
+    testMinutes = 5,      -- how long a test sentence lasts
     solitaryMinutes = 5,  -- how long an officer can put an inmate in a solitary cell. Place solitary cells in the builder
     escapeRadius = 150.0, -- used when a prison has no boundary drawn
     -- Prison jobs are made per prison on the builder's Jobs tab. These are the starting values.

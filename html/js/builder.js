@@ -263,7 +263,7 @@
             </div>
             <div class="bx-body">
                 <div class="bx-nav" id="bx-nav"></div>
-                <div class="bx-main"><div class="bx-page xsp-scroll" id="bx-page"></div></div>
+                <div class="bx-main"><div id="bx-test"></div><div class="bx-page xsp-scroll" id="bx-page"></div></div>
             </div>
             <div id="bx-ov"></div>
         </div>`;
@@ -277,13 +277,43 @@
         stage.querySelector('.bx-top').addEventListener('click', onClick);
         stage.querySelector('#bx-nav').addEventListener('click', onClick);
         stage.querySelector('#bx-ov').addEventListener('click', onClick);
+        stage.querySelector('#bx-test').addEventListener('click', onClick);
         stage.querySelector('#bx-ov').addEventListener('input', onPaletteInput);
         stage.querySelector('#bx-ov').addEventListener('keydown', onPaletteKey);
         S.shell = true;
+        renderTest();
         renderNav();
         renderPage(true);
         renderOverlay();
     }
+
+    function testClock(left) {
+        const s = Math.max(0, Math.floor(Number(left) || 0));
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    function renderTest() {
+        const box = root.querySelector('#bx-test');
+        if (!box) return;
+        const jt = S.jailTest;
+        if (!jt) { box.innerHTML = ''; return; }
+        const note = jt.escaped ? t('bx_jailtest_escaped', null, 'You escaped. Police were not told.') : t('bx_jailtest_left', { time: testClock(jt.left) }, `${testClock(jt.left)} left`);
+        box.innerHTML = `<div class="bx-test">
+            <span class="bx-test-ico">${I('jail', 17)}</span>
+            <div class="bx-test-text"><b>${esc(t('bx_jailtest_on', { jail: jt.jail || '' }, `You are in a jail test at ${jt.jail || ''}`))}</b><small id="bx-test-left">${esc(note)}</small></div>
+            <span class="bx-sp"></span>
+            ${jt.escaped ? '' : `<button class="bx-btn" data-act="jailtest-skip">${I('clock', 14)}${esc(t('bx_jailtest_skip', null, 'Skip to release'))}</button>`}
+            <button class="bx-btn danger" data-act="jailtest-end">${I('exit', 14)}${esc(t('bx_jailtest_end', null, 'End test'))}</button>
+        </div>`;
+    }
+
+    setInterval(() => {
+        const jt = S.jailTest;
+        if (!S.open || !jt || jt.escaped || !(jt.left > 0)) return;
+        jt.left -= 1;
+        const el = root.querySelector('#bx-test-left');
+        if (el) el.textContent = t('bx_jailtest_left', { time: testClock(jt.left) }, `${testClock(jt.left)} left`);
+    }, 1000);
 
     function renderNav() {
         const nav = root.querySelector('#bx-nav');
@@ -415,6 +445,7 @@
                     <span class="bx-save-state ${S.dirty ? 'dirty' : ''}" id="bx-state">${stateText()}</span></div></div>
                 <label class="bx-toggle" data-act="enabled" title="${esc(t('bx_live_tip', null, 'Off hides it from players without deleting it.'))}"><span class="bx-switch ${p.enabled !== false ? 'on' : ''}"></span>${esc(p.enabled !== false ? t('bx_live', null, 'Live') : t('bx_off', null, 'Off'))}</label>
                 <button class="bx-btn" data-act="goto-first" ${anchor(p) ? '' : 'disabled'}>${I('goto', 14)}${esc(t('builder_goto', null, 'Go to'))}</button>
+                ${p.kind === 'jail' && p.id ? `<button class="bx-btn" data-act="jailtest" ${count(p.points.cell) > 0 ? '' : 'disabled'} title="${esc(t('bx_jailtest_tip', null, 'Jail yourself here for a few minutes to try it out. Nothing goes on your record. Open the builder again to skip ahead or end it.'))}">${I('jail', 14)}${esc(t('bx_jailtest', null, 'Test on me'))}</button>` : ''}
                 <button class="bx-btn" data-act="dup">${I('copy', 14)}${esc(t('bx_duplicate', null, 'Duplicate'))}</button>
                 <button class="bx-btn ghost" data-act="discard" id="bx-discard" ${S.dirty ? '' : 'disabled'}>${I('undo', 14)}${esc(t('builder_discard', null, 'Discard'))}</button>
                 <button class="bx-btn primary" data-act="save">${I('check', 15)}${esc(t('save', null, 'Save'))}<span class="bx-kbd">Ctrl S</span></button>
@@ -1094,6 +1125,15 @@
         const act = el.dataset.act;
         const d = el.dataset;
         if (act === 'ov-close') { if (e.target === el) closeOverlay(); return; }
+        if (act === 'jailtest-skip') {
+            const res = await XS.rpc('builder:jailtestskip', {});
+            if (!res.ok) { XS.toast(res.error, 'error'); return; }
+            S.jailTest = res.data && typeof res.data === 'object' && !Array.isArray(res.data) ? res.data : null;
+            renderTest();
+            XS.toast(t('jailtest_skipped', null, 'Skipped ahead. You are released in a few seconds.'), 'ok');
+            return;
+        }
+        if (act === 'jailtest-end') { XS.rpc('builder:jailtestend', {}); return; }
         if (el.disabled) return;
         switch (act) {
         case 'palette': return openPalette();
@@ -1153,6 +1193,11 @@
             return XS.toast(t('bx_discarded', null, 'Changes thrown away.'), 'ok');
         }
         case 'dup': return edit(duplicate(p), { dirty: true });
+        case 'jailtest': {
+            if (S.dirty) { XS.toast(t('bx_jailtest_save', null, 'Save the prison first, then test it.'), 'error'); return; }
+            XS.rpc('builder:jailtest', { id: p.id });
+            return;
+        }
         case 'delete':
             return modal(t('bx_delete_title', { name: p.name }, 'Delete %{name}?'), t('bx_delete_text', null, 'This removes the place and every point in it for good.'), [
                 { label: t('cancel', null, 'Cancel'), cls: 'ghost', fn: () => {} },
@@ -1370,6 +1415,7 @@
                 S.kinds = data.kinds || {};
                 Object.keys(S.kinds).forEach((k) => { S.kinds[k] = XS.list(S.kinds[k]); });
                 S.places = XS.list(data.places).map(normalise);
+                S.jailTest = data.jailTest && typeof data.jailTest === 'object' && !Array.isArray(data.jailTest) ? data.jailTest : null;
                 S.system = data.system || {};
                 S.live = data.live && !Array.isArray(data.live) ? data.live : {};
                 XS.WheelEditor.load(data);

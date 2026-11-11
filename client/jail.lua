@@ -90,7 +90,7 @@ RegisterNetEvent('XS-PoliceSystem:client:pendingBelongings', function()
     Framework.Notify(Text('released_pending'), 'inform')
 end)
 
-RegisterNetEvent('XS-PoliceSystem:client:released', function(spot, look, pending)
+RegisterNetEvent('XS-PoliceSystem:client:released', function(spot, look, pending, reason)
     JailClient.state = nil
     UI.Send('jail', 'close', {})
     JailClient.Stop()
@@ -98,7 +98,11 @@ RegisterNetEvent('XS-PoliceSystem:client:released', function(spot, look, pending
     local ped = PlayerPedId()
     if look then Clothing.Restore(ped, look) end
     if Config.Jail.outfit and (not look or Clothing.Wears(ped, jailOutfit(ped))) then Clothing.ReloadSaved() end
-    Framework.Notify(Text(pending and 'released_pending' or 'released'), 'success')
+    if reason == 'test' then
+        Framework.Notify(Text(pending and 'released_pending' or 'jailtest_over'), 'success')
+    else
+        Framework.Notify(Text(pending and 'released_pending' or 'released'), 'success')
+    end
 end)
 
 JailClient.doneAt = {}
