@@ -168,7 +168,7 @@ Actions.seize = function(officer, target)
     local cash = Framework.GetMoney(target).cash
     if cash <= 0 then return false, Text('err_no_cash') end
     if not Framework.RemoveMoney(target, 'cash', cash, 'Seized by police') then return false, Text('err_failed') end
-    if Config.Seize.society and Banking.name then Banking.Deposit(officer.job, cash, 'Seized cash') end
+    if Config.Seize.society and Banking.Ready() then Banking.Deposit(officer.job, cash, 'Seized cash') end
     Db.Log('seize', targetOf(target), cash, 'Cash seized', officer)
     Framework.Notify(target, Text('cash_seized_you', { amount = cash }), 'error')
     return true, Text('cash_seized', { amount = cash })
@@ -332,7 +332,7 @@ Actions.fine = function(officer, target, extra)
     end
     if not paid then return false, Text('err_cannot_pay') end
     Field.fineAt[key] = os.time()
-    if Config.Fines.society and Banking.name then Banking.Deposit(officer.job, amount, 'Fine: ' .. reason) end
+    if Config.Fines.society and Banking.Ready() then Banking.Deposit(officer.job, amount, 'Fine: ' .. reason) end
     Db.Log('fine', targetOf(target), amount, reason, officer)
     TriggerEvent('XS-PoliceSystem:server:fined', target, amount, reason, officer.src)
     Framework.Notify(target, Text('fined_you', { amount = amount, reason = reason }), 'error')

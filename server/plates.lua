@@ -146,7 +146,7 @@ RegisterNetEvent('XS-PoliceSystem:server:speedCamera', function(index, where)
     end
     if not fine or fine <= 0 then return end
     if not Framework.RemoveMoney(src, 'bank', fine, 'Speed camera') then return end
-    if c.society and Banking.name then Banking.Deposit(c.account or 'police', fine, 'Speed camera ' .. plate) end
+    if c.society and Banking.Ready() then Banking.Deposit(c.account or 'police', fine, 'Speed camera ' .. plate) end
     Db.Log('speeding', { citizenid = Framework.GetCitizenId(src), name = Framework.GetName(src) or '' }, fine, ('%s, %d over at %s'):format(plate, over, where), { citizenid = '', name = '', job = c.society and (c.account or 'police') or '' })
     Framework.Notify(src, Text('speed_fined', { amount = fine, over = over, unit = c.mph ~= false and 'mph' or 'km/h' }), 'error')
 end)

@@ -128,7 +128,7 @@ local function pay(job, key)
         if not tjob or tjob.name ~= job then return Framework.Notify(src, Text('err_wrong_job', { job = job }), 'error') end
         local amount = ((Config.Pay or {})[key]) or 500
         local officerJob = Framework.GetJob(src)
-        if (Config.Pay or {}).fromSociety ~= false and Banking.name then
+        if (Config.Pay or {}).fromSociety ~= false and Banking.Ready() then
             if not Banking.Withdraw(Stations.Society(officerJob), amount, ('Paid %s %s'):format(job, Framework.GetName(target) or target)) then
                 return Framework.Notify(src, Text('err_no_money'), 'error')
             end

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1] — 2026-11-20
+
+- Fines and the boss account work if your bank starts later
+
+Replace everything except your config.lua. No SQL to run.
+
 ## [1.1.0] — 2026-11-10
 
 ### Added

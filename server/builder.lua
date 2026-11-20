@@ -194,7 +194,7 @@ lib.callback.register('XS-PoliceSystem:server:builderOpen', function(src)
         settings = Settings.Builder(),
         live = liveStats(),
         system = {
-            framework = Framework.name, inventory = Inventory.name, banking = Banking.name, dispatch = Dispatch.name,
+            framework = Framework.name, inventory = Inventory.name, banking = Banking.Ready() and Banking.name or nil, dispatch = Dispatch.name,
             keys = Keys.name, evidence = Evidence.Name(), onDuty = Duty.Count(), admin = GetPlayerName(src) or '',
         },
     }

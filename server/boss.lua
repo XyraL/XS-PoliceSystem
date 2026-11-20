@@ -150,11 +150,11 @@ lib.callback.register('XS-PoliceSystem:server:boss', function(src, placeId, poin
     return true, {
         department = label, job = job.name, myGrade = job.isBoss and 99 or maxGrant(job), isBoss = job.isBoss,
         staff = staff, onDuty = #online, grades = grades, nearby = nearby,
-        balance = Banking.name and Banking.Balance(Stations.Society(job)) or nil,
+        balance = Banking.Ready() and Banking.Balance(Stations.Society(job)) or nil,
         me = { cid = Framework.GetCitizenId(src), name = Framework.GetName(src) or '', grade = job.grade or 0, rank = gradeLabel(job.name, job.grade or 0) },
         station = { id = place.id, name = place.name, armory = place.armory or {}, vehicles = place.vehicles or {}, helicopters = place.helicopters or {} },
         pools = Office.Pools(place), week = Office.Week(job.name), recent = Office.Log(job.name, { limit = 12 }),
-        banking = Banking.name ~= nil, maxPrice = (Config.Boss or {}).maxPrice or 100000,
+        banking = Banking.Ready(), maxPrice = (Config.Boss or {}).maxPrice or 100000,
     }
 end)
 
@@ -240,7 +240,7 @@ end)
 lib.callback.register('XS-PoliceSystem:server:bossMoney', function(src, placeId, pointId, direction, amount)
     local job, err = manager(src, placeId, pointId)
     if not job then return false, err end
-    if not Banking.name then return false, Text('err_no_banking') end
+    if not Banking.Ready() then return false, Text('err_no_banking') end
     amount = math.floor(tonumber(amount) or 0)
     if amount <= 0 then return false, Text('err_amount') end
     local society = Stations.Society(job)
